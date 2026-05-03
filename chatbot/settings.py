@@ -133,6 +133,8 @@ LOGIN_URL = 'chat:login'
 LOGIN_REDIRECT_URL = 'chat:chat_home'
 LOGOUT_REDIRECT_URL = 'chat:login'
 
+# we nuking gng
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
