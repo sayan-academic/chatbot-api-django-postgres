@@ -38,18 +38,37 @@ def login_view(request):
 
 def logout_view(request):
     if request.method == 'POST':
+        session_key = request.session.session_key
+        if session_key:
+            ChatMessage.objects.filter(session_key=session_key).delete()
         logout(request)
         return redirect('chat:login')
 
 @login_required(login_url='chat:login')
 def chat_home(request):
-    if request.method == "POST":
-        user_text = request.POST.get('message')
 
+    if not request.session.session_key:
+            request.session.create()
+
+    current_session_key = request.session.session_key
+
+    if request.method == "POST":
+
+        user_text = request.POST.get('message')
+        
         # 1. FETCH RECENT HISTORY FROM POSTGRES
         # We grab the last 10 messages to provide context without overloading tokens
-        db_messages = ChatMessage.objects.all().order_by('-created_at')[:10]
-        
+        db_messages = list(ChatMessage.objects.filter(
+            user=request.user, 
+            session_key=current_session_key
+        ).order_by('-created_at')[:10])
+
+        ChatMessage.objects.create(
+            user=request.user, 
+            session_key=current_session_key, 
+            role='user', 
+            content=user_text
+        )
         # 2. FORMAT FOR GEMINI (The SDK expects a specific list structure)
         # We reverse because we fetched the 'latest' first, but Gemini needs chronological order
         history = []
@@ -88,12 +107,19 @@ def chat_home(request):
 
         # 4. SAVE TO POSTGRESQL
         # This replaces the session.append logic
-        ChatMessage.objects.create(role="user", content=user_text)
-        ChatMessage.objects.create(role="model", content=ai_response)
+        ChatMessage.objects.create(
+            user=request.user, 
+            session_key=current_session_key, 
+            role='model', 
+            content=ai_response # Replace with whatever variable holds your Gemini output
+        )
 
         return JsonResponse({'response': f"{source}{ai_response}"})
 
     # 5. INITIAL PAGE LOAD
     # Fetch all history so the user sees their past chats when they open the page
-    full_history = ChatMessage.objects.all().order_by('created_at')
+    full_history = ChatMessage.objects.filter(
+        user=request.user, 
+        session_key=current_session_key
+    ).order_by('created_at')
     return render(request, 'chatbot/homepage.html', {'history': full_history})
