@@ -181,7 +181,12 @@
     <div id="sidebar">
         <button class="new-chat-btn" onclick="location.reload()">+ New Chat</button>
         <p style="color: #888; font-size: 12px; margin-left: 10px;">Recent</p>
-        
+        <form method="POST" action="{% url 'logout' %}" style="margin-top: auto; padding-top: 20px;">
+            {% csrf_token %}
+            <button type="submit" style="background: transparent; border: 1px solid #444; color: #888; width: 100%; padding: 10px; border-radius: 8px; cursor: pointer;">
+                Logout
+            </button>
+        </form>
         <div class="history-list" id="sidebar-history">
             {% for msg in history %}
                 {% if msg.role == 'user' %}
@@ -196,7 +201,7 @@
     <div id="main-content">
         <div id="chat-container">
             <div class="message bot-message">
-                Hello Sayan! I'm your assistant. History is now saved in the sidebar. How can I help you today?
+                Hello {{ request.user.username|title }}! I'm your assistant. History is now saved in the sidebar...
             </div>
             </div>
 
