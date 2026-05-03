@@ -20,7 +20,7 @@ def register_view(request):
         if form.is_valid():
             user = form.save() # This triggers the INSERT INTO auth_user Postgres command!
             login(request, user)
-            return redirect('chat_home')
+            return redirect('chat:chat_home')
     else:
         form = CustomRegistrationForm()
     return render(request, 'chatbot/register.html', {'form': form})
@@ -31,7 +31,7 @@ def login_view(request):
         if form.is_valid():
             user = form.get_user()
             login(request, user)
-            return redirect('chat_home')
+            return redirect('chat:chat_home')
     else:
         form = CustomLoginForm()
     return render(request, 'chatbot/login.html', {'form': form})
@@ -39,9 +39,9 @@ def login_view(request):
 def logout_view(request):
     if request.method == 'POST':
         logout(request)
-        return redirect('login')
+        return redirect('chat:login')
 
-@login_required(login_url='/login/')
+@login_required(login_url='chat:login')
 def chat_home(request):
     if request.method == "POST":
         user_text = request.POST.get('message')

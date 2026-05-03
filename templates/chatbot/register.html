@@ -25,7 +25,7 @@
         h2 { text-align: center; margin-bottom: 30px; }
         
         /* Django Form Styling Override */
-        input[type="text"], input[type="password"] {
+        input[type="text"], input[type="password"], input[type="email"] {
             width: 100%;
             padding: 12px;
             margin: 8px 0 20px 0;
@@ -66,7 +66,7 @@
             {{ form.as_p }}
             <button type="submit">Register</button>
         </form>
-        <a href="{% url 'login' %}" class="switch-link">Already have an account? Log in</a>
+        <a href="{% url 'chat:login' %}" class="switch-link">Already have an account? Log in</a>
     </div>
 </body>
 </html>
