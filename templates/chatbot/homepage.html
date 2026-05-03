@@ -214,56 +214,76 @@
         </div>
     </div>
 
-    <script>
-        const chatForm = document.getElementById('input-area');
-        const chatContainer = document.getElementById('chat-container');
-        const userInput = document.getElementById('user-input');
-        const sidebarHistory = document.getElementById('sidebar-history');
+   <script>
+    const chatForm = document.getElementById('input-area');
+    const chatContainer = document.getElementById('chat-container');
+    const userInput = document.getElementById('user-input');
+    const sidebarHistory = document.getElementById('sidebar-history');
+    
+    // NEW 1: Grab your submit button so we can control it
+    const submitBtn = chatForm.querySelector('button[type="submit"]') || chatForm.querySelector('button');
 
-        chatForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const message = userInput.value.trim();
-            if (!message) return;
+    chatForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const message = userInput.value.trim();
+        if (!message) return;
 
-            // 1. Add User Message to UI
-            const userDiv = document.createElement('div');
-            userDiv.className = 'message user-message';
-            userDiv.textContent = message;
-            chatContainer.appendChild(userDiv);
+        // NEW 2: STATE -> LOADING (Lock the UI immediately)
+        // This makes it physically impossible to double-click and send a second request
+        userInput.disabled = true;
+        submitBtn.disabled = true;
+        
+        // Optional: Change the placeholder to show it's thinking
+        userInput.placeholder = "Gemini is thinking...";
 
-            // Add to Sidebar History immediately (UX improvement)
-            const historyItem = document.createElement('div');
-            historyItem.className = 'history-item';
-            historyItem.textContent = message.length > 25 ? message.substring(0, 22) + '...' : message;
-            sidebarHistory.prepend(historyItem);
+        // 1. Add User Message to UI
+        const userDiv = document.createElement('div');
+        userDiv.className = 'message user-message';
+        userDiv.textContent = message;
+        chatContainer.appendChild(userDiv);
+
+        // Add to Sidebar History immediately (UX improvement)
+        const historyItem = document.createElement('div');
+        historyItem.className = 'history-item';
+        historyItem.textContent = message.length > 25 ? message.substring(0, 22) + '...' : message;
+        sidebarHistory.prepend(historyItem);
+        
+        userInput.value = '';
+        chatContainer.scrollTo({ top: chatContainer.scrollHeight, behavior: 'smooth' });
+
+        // 2. Send to Django Backend
+        try {
+            const response = await fetch('', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams({'message': message})
+            });
+
+            const data = await response.json();
+
+            // 3. Add AI Response to UI
+            const botDiv = document.createElement('div');
+            botDiv.className = 'message bot-message';
+            botDiv.textContent = data.response;
+            chatContainer.appendChild(botDiv);
             
-            userInput.value = '';
             chatContainer.scrollTo({ top: chatContainer.scrollHeight, behavior: 'smooth' });
-
-            // 2. Send to Django Backend
-            try {
-                const response = await fetch('', {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: new URLSearchParams({'message': message})
-                });
-
-                const data = await response.json();
-
-                // 3. Add AI Response to UI
-                const botDiv = document.createElement('div');
-                botDiv.className = 'message bot-message';
-                botDiv.textContent = data.response;
-                chatContainer.appendChild(botDiv);
-                
-                chatContainer.scrollTo({ top: chatContainer.scrollHeight, behavior: 'smooth' });
-            } catch (error) {
-                console.error("Error calling the API:", error);
-            }
-        });
-    </script>
+            
+        } catch (error) {
+            console.error("Error calling the API:", error);
+            // Optional: You could append a red "Error: Could not reach server" message here
+        } finally {
+            // NEW 3: STATE -> IDLE (Unlock the UI)
+            // The 'finally' block is guaranteed to run, whether the 'try' succeeded OR the 'catch' triggered an error.
+            userInput.disabled = false;
+            submitBtn.disabled = false;
+            userInput.placeholder = "Type your message here..."; // Reset placeholder
+            userInput.focus(); // Automatically put the typing cursor back inside the input box
+        }
+    });
+</script>
 </body>
 </html>
