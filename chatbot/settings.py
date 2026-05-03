@@ -127,6 +127,12 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+#LOGIN REDIRECT
+LOGIN_URL = 'chat:login'
+
+LOGIN_REDIRECT_URL = 'chat:chat_home'
+LOGOUT_REDIRECT_URL = 'chat:login'
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
