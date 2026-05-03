@@ -1,10 +1,16 @@
 # Create your models here.
 from django.db import models
 
+from django.contrib.auth.models import User
+
 class ChatMessage(models.Model):
     """
     Stores individual message turns between the User and the AI.
     """
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    # Add this new line:
+    session_key = models.CharField(max_length=40, null=True, blank=True)
+    
     ROLE_CHOICES = [
         ('user', 'User'),
         ('model', 'AI Assistant'),
