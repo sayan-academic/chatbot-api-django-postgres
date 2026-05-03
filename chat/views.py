@@ -1,8 +1,11 @@
 import os
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from google import genai  # Note the new import
 from dotenv import load_dotenv
+from django.contrib.auth import login, logout
+from django.contrib.auth.decorators import login_required
+from .forms import CustomRegistrationForm, CustomLoginForm
 
 from chat.models import ChatMessage
 
@@ -11,6 +14,34 @@ load_dotenv()
 # New 2026 Client initialization
 client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
+def register_view(request):
+    if request.method == 'POST':
+        form = CustomRegistrationForm(request.POST)
+        if form.is_valid():
+            user = form.save() # This triggers the INSERT INTO auth_user Postgres command!
+            login(request, user)
+            return redirect('chat_home')
+    else:
+        form = CustomRegistrationForm()
+    return render(request, 'chatbot/register.html', {'form': form})
+
+def login_view(request):
+    if request.method == 'POST':
+        form = CustomLoginForm(data=request.POST)
+        if form.is_valid():
+            user = form.get_user()
+            login(request, user)
+            return redirect('chat_home')
+    else:
+        form = CustomLoginForm()
+    return render(request, 'chatbot/login.html', {'form': form})
+
+def logout_view(request):
+    if request.method == 'POST':
+        logout(request)
+        return redirect('login')
+
+@login_required(login_url='/login/')
 def chat_home(request):
     if request.method == "POST":
         user_text = request.POST.get('message')
