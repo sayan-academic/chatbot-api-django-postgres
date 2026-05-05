@@ -33,5 +33,6 @@ jobs:
           # We will inject these secrets securely in step 2
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           SECRET_KEY: ${{ secrets.SECRET_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
           python manage.py clear_orphans
