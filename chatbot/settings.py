@@ -25,7 +25,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv('SECRET_KEY')
+SECRET_KEY = os.environ['SECRET_KEY']
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -87,7 +87,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'chatbot_db',
         'USER': 'postgres',
-        'PASSWORD': os.getenv('DB_PASSWORD'), # The one you set during installation
+        'PASSWORD': os.environ['DB_PASSWORD'], # The one you set during installation
         'HOST': '127.0.0.1',
         'PORT': '5432',
     }
@@ -96,7 +96,7 @@ DATABASES = {
 # Production-ready neon.tech db
 DATABASES = {
     'default': dj_database_url.config(
-        default=os.environ.get('DATABASE_URL'),
+        default=os.environ['DATABASE_URL'],
         conn_max_age=600
     )
 }

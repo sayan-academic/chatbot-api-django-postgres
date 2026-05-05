@@ -12,7 +12,7 @@ from chat.models import ChatMessage
 load_dotenv()
 
 # New 2026 Client initialization
-client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
 
 def register_view(request):
     if request.method == 'POST':
